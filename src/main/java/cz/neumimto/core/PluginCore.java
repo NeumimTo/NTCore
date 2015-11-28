@@ -36,8 +36,8 @@ public class PluginCore {
     public void setup(GameConstructionEvent event) {
         Game game = event.getGame();
         IoC ioC = IoC.get();
-        ioC.registerInterfaceImplementation(game.getClass(),game);
-        ioC.registerInterfaceImplementation(logger.getClass(),logger);
+        ioC.registerInterfaceImplementation(Game.class,game);
+        ioC.registerInterfaceImplementation(Logger.class,logger);
     }
 
     @Listener
@@ -51,7 +51,7 @@ public class PluginCore {
         }
 
         EntityManager entityManager = Persistence.createEntityManagerFactory("NT-Core", properties).createEntityManager();
-        IoC.get().registerInterfaceImplementation(entityManager.getClass(),entityManager);
+        IoC.get().registerInterfaceImplementation(EntityManager.class,entityManager);
         EntityManagerCreatedEvent e = new EntityManagerCreatedEvent(entityManager);
         event.getGame().getEventManager().post(e);
 
