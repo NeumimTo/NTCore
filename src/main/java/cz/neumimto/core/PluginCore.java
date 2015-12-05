@@ -4,9 +4,17 @@ import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.data.Transaction;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
+import org.spongepowered.api.item.inventory.Container;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.sql.SqlService;
 
@@ -20,8 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by NeumimTo on 28.11.2015.
@@ -53,7 +60,7 @@ public class PluginCore {
         EntityManager entityManager = Persistence.createEntityManagerFactory("NT-Core", properties).createEntityManager();
         IoC.get().registerInterfaceImplementation(EntityManager.class,entityManager);
         EntityManagerCreatedEvent e = new EntityManagerCreatedEvent(entityManager);
-        event.getGame().getEventManager().post(e);
+        Sponge.getEventManager().post(e);
 
     }
 
