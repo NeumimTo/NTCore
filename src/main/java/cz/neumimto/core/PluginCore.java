@@ -2,24 +2,21 @@ package cz.neumimto.core;
 
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.data.Transaction;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
-import org.spongepowered.api.item.inventory.Container;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.service.sql.SqlService;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,8 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-
+import java.util.Properties;
+//todo make possible more than one persistence context
 /**
  * Created by NeumimTo on 28.11.2015.
  */
@@ -57,11 +54,22 @@ public class PluginCore {
             e.printStackTrace();
         }
 
-        EntityManager entityManager = Persistence.createEntityManagerFactory("NT-Core", properties).createEntityManager();
-        IoC.get().registerInterfaceImplementation(EntityManager.class,entityManager);
-        EntityManagerCreatedEvent e = new EntityManagerCreatedEvent(entityManager);
+        properties.put("hibernate.mapping.precedence","class ,hbm");
+        FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
+        Sponge.getEventManager().post(ev);
+        try {
+            ev.getClasses().add(Class.forName("cz.neumimto.players.CharacterBase"));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        Configuration configuration = new Configuration();
+        configuration.addProperties(properties);
+        ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
+        ServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+        SessionFactory factory = configuration.buildSessionFactory(registry);
+        IoC.get().registerInterfaceImplementation(SessionFactory.class,factory);
+        SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
         Sponge.getEventManager().post(e);
-
     }
 
     protected Path copyDBProperties(Game game) {
@@ -77,5 +85,10 @@ public class PluginCore {
             }
         }
         return path;
+    }
+
+    @Listener
+    public void close(GameStoppingServerEvent event) {
+        IoC.get().build(SessionFactory.class).close();
     }
 }
