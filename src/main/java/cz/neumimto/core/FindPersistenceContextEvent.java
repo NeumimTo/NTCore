@@ -11,18 +11,14 @@ import java.util.Set;
  */
 public class FindPersistenceContextEvent implements Event  {
     private Set<Class<?>> classes = new HashSet<>();
-    private Cause plugin = Cause.ofNullable(null);
+    private Cause a = Cause.ofNullable(null);
     public Set<Class<?>> getClasses() {
         return classes;
     }
 
     @Override
     public Cause getCause() {
-        return null;
+        return a;
     }
 
-
-    public void setCause(Object plugin) {
-        this.plugin = Cause.of(plugin);
-    }
 }

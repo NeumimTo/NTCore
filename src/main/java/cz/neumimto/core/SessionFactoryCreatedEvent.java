@@ -9,7 +9,7 @@ import org.spongepowered.api.event.cause.Cause;
  */
 public final class SessionFactoryCreatedEvent implements Event {
     private final SessionFactory sessionFactory;
-    private Cause plugin = Cause.ofNullable(null);
+    private Cause a = Cause.ofNullable(null);
     public SessionFactoryCreatedEvent(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
@@ -20,10 +20,7 @@ public final class SessionFactoryCreatedEvent implements Event {
 
     @Override
     public Cause getCause() {
-        return plugin;
+        return a;
     }
 
-    public void setCause(Object plugin) {
-        this.plugin = Cause.of(plugin);
-    }
 }
