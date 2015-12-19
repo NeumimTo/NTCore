@@ -1,6 +1,7 @@
 package cz.neumimto.core;
 
 import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.cause.Cause;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,9 +11,18 @@ import java.util.Set;
  */
 public class FindPersistenceContextEvent implements Event  {
     private Set<Class<?>> classes = new HashSet<>();
-
+    private Cause plugin = Cause.ofNullable(null);
     public Set<Class<?>> getClasses() {
         return classes;
     }
 
+    @Override
+    public Cause getCause() {
+        return null;
+    }
+
+
+    public void setCause(Object plugin) {
+        this.plugin = Cause.of(plugin);
+    }
 }
