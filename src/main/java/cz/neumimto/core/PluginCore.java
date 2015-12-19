@@ -90,6 +90,7 @@ public class PluginCore {
 
     @Listener
     public void close(GameStoppedServerEvent event) {
+
        // IoC.get().build(SessionFactory.class).close();
     }
 }
