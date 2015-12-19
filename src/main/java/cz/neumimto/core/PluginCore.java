@@ -13,6 +13,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
@@ -88,7 +89,7 @@ public class PluginCore {
     }
 
     @Listener
-    public void close(GameStoppingServerEvent event) {
-        IoC.get().build(SessionFactory.class).close();
+    public void close(GameStoppedServerEvent event) {
+       // IoC.get().build(SessionFactory.class).close();
     }
 }
