@@ -15,13 +15,14 @@ import java.util.Set;
 /**
  * Generic DAO class template,
  * No locking is set up!
+ * All entites retrieved from this class are in detached state
+ *
  * @param <E>
  */
 public abstract class GenericDao<E> {
 
     @cz.neumimto.core.ioc.Inject
     protected SessionFactory factory;
-
 
     public void update(E e) {
         Session session = factory.openSession();
@@ -32,9 +33,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx!=null) tx.rollback();
+            if (tx != null) tx.rollback();
             ex.printStackTrace();
-        }finally {
+        } finally {
             session.close();
         }
     }
@@ -48,9 +49,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx!=null) tx.rollback();
+            if (tx != null) tx.rollback();
             ex.printStackTrace();
-        }finally {
+        } finally {
             session.close();
         }
     }
@@ -64,24 +65,25 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx!=null) tx.rollback();
+            if (tx != null) tx.rollback();
             ex.printStackTrace();
-        }finally {
+        } finally {
             session.close();
         }
     }
 
-    public void merge(E e) {
+    public void merge(E e, Long id) {
         Session session = factory.openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
+            session.get(e.getClass(), id);
             session.merge(e);
             tx.commit();
         } catch (Exception ex) {
-            if (tx!=null) tx.rollback();
+            if (tx != null) tx.rollback();
             ex.printStackTrace();
-        }finally {
+        } finally {
             session.close();
         }
     }
