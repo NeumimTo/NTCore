@@ -13,6 +13,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
@@ -38,7 +39,7 @@ public class PluginCore {
 
     @Listener
     public void setup(GameConstructionEvent event) {
-        Game game = event.getGame();
+        Game game = Sponge.getGame();
         IoC ioC = IoC.get();
         ioC.registerInterfaceImplementation(Game.class,game);
         ioC.registerInterfaceImplementation(Logger.class,logger);
@@ -46,7 +47,7 @@ public class PluginCore {
 
     @Listener
     public void setupHibernate(GamePreInitializationEvent event) {
-        Path p = copyDBProperties(event.getGame());
+        Path p = copyDBProperties(Sponge.getGame());
         Properties properties = new Properties();
         try (FileInputStream stream = new FileInputStream(p.toFile())) {
             properties.load(stream);
@@ -88,7 +89,8 @@ public class PluginCore {
     }
 
     @Listener
-    public void close(GameStoppingServerEvent event) {
-        IoC.get().build(SessionFactory.class).close();
+    public void close(GameStoppedServerEvent event) {
+
+       // IoC.get().build(SessionFactory.class).close();
     }
 }
