@@ -21,8 +21,14 @@ For postgresql:
 
 In this example all connections from localhost are connections provided by hikari.
 
-How to get instance of EntityManager:
+How to get an instance of SessionFactory:
 
-    EntityManager em = Ioc.get().build(Entitymanager.class);
+    SessionFactory s = Ioc.get().build(SessionFactory.class);
+
+Todo:
+
+    - Add second level cache for Hibernate
+
+
 
 
