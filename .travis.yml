@@ -1,5 +1,4 @@
+travis setup releases
 language: java
 jdk:
   - oraclejdk8
-
-travis setup releases
