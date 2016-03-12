@@ -25,7 +25,7 @@
             <version>5f7e0343b1</version>
         </dependency>
         <dependency>
-            <groupId>com.github.NeumimTo</groupId>
+          <groupId>com.github.NeumimTo</groupId>
             <artifactId>HoconConfigMapper</artifactId>
             <exclusions>
                 <exclusion>
@@ -33,12 +33,12 @@
                     <groupId>com.typesafe</groupId>
                 </exclusion>
             </exclusions>
-            <version>b9d5900</version>
+            <version>f353fa6</version>
         </dependency>
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>spongeapi</artifactId>
-            <version>2.1-SNAPSHOT</version>
+            <version>LATEST</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
