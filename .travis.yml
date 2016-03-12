@@ -1,6 +1,6 @@
 deploy:
   provider: releases
-  api_key: apikey
+  api_key: $apikey
   skip_cleanup: true
   file_glob: true
   file: "NTCore-1.2-shaded.jar"
