@@ -1,3 +1,9 @@
+deploy:
+  provider: releases
+  api_key: github_token
+  skip_cleanup:
+  on:
+    branch: master
 language: java
 jdk:
   - oraclejdk8
