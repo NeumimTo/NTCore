@@ -29,7 +29,7 @@ import java.util.Properties;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "NTCORE", name = "NT-Core",version = "1.0")
+@Plugin(id = "ntcore", name = "NT-Core",version = "1.0")
 public class PluginCore {
 
     protected static PluginCore Instance;
