@@ -58,11 +58,6 @@ public class PluginCore {
         properties.put("hibernate.mapping.precedence","class ,hbm");
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
         Sponge.getEventManager().post(ev);
-        try {
-            ev.getClasses().add(Class.forName("cz.neumimto.players.CharacterBase"));
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         Configuration configuration = new Configuration();
         configuration.addProperties(properties);
         ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
