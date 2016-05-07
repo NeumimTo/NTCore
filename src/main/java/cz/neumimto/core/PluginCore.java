@@ -2,8 +2,8 @@ package cz.neumimto.core;
 
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
-import javassist.CannotCompileException;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -22,22 +22,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 //todo make possible more than one persistence context
 /**
@@ -128,6 +118,10 @@ public class PluginCore {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static LaunchClassLoader getClassLoader() {
+        return Launch.classLoader;
     }
 
     @Listener

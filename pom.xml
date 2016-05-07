@@ -6,7 +6,7 @@
 
     <groupId>cz.neumimto</groupId>
     <artifactId>NTCore</artifactId>
-    <version>1.2</version>
+    <version>1.4</version>
 
     <repositories>
         <repository>
