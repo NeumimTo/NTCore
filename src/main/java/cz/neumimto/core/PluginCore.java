@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -120,7 +121,7 @@ public class PluginCore {
         }
     }
 
-    public static LaunchClassLoader getClassLoader() {
+    public static URLClassLoader getClassLoader() {
         return Launch.classLoader;
     }
 
