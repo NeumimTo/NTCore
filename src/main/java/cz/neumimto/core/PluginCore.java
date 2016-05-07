@@ -2,6 +2,8 @@ package cz.neumimto.core;
 
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
+import javassist.CannotCompileException;
+import net.minecraft.launchwrapper.Launch;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -14,22 +16,34 @@ import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 //todo make possible more than one persistence context
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "ntcore", name = "NT-Core",version = "1.0")
+@Plugin(id = "cz.neumimto.core", name = "NT-Core",version = "1.0")
 public class PluginCore {
 
     protected static PluginCore Instance;
@@ -43,6 +57,20 @@ public class PluginCore {
         IoC ioC = IoC.get();
         ioC.registerInterfaceImplementation(Game.class,game);
         ioC.registerInterfaceImplementation(Logger.class,logger);
+        PluginContainer implementation = game.getPlatform().getImplementation();
+
+        if (implementation.getName().equalsIgnoreCase("SpongeVanilla")) {
+            File folder = new File("./mods/NtCore");
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+            for (File file : folder.listFiles()) {
+                if (file.getName().endsWith("jar")) {
+                    logger.info(file.getName()+ " will be added to the classpath.");
+                    loadJarFile(file);
+                }
+            }
+        }
     }
 
     @Listener
@@ -61,6 +89,17 @@ public class PluginCore {
         Configuration configuration = new Configuration();
         configuration.addProperties(properties);
         ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
+        try {
+            getClass().getClassLoader().loadClass(properties.get("hibernate.hikari.dataSourceClassName").toString());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            logger.info("Loading driver class "+properties.get("hibernate.hikari.dataSourceClassName").toString());
+            Class.forName(properties.get("hibernate.hikari.dataSourceClassName").toString());
+         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         ServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
         SessionFactory factory = configuration.buildSessionFactory(registry);
         IoC.get().registerInterfaceImplementation(SessionFactory.class,factory);
@@ -81,6 +120,14 @@ public class PluginCore {
             }
         }
         return path;
+    }
+
+    public static void loadJarFile(File f) {
+        try {
+            Launch.classLoader.addURL(f.toURI().toURL());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Listener

@@ -38,7 +38,7 @@
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>spongeapi</artifactId>
-            <version>LATEST</version>
+            <version>5.0.0-20160504.030150-18</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -59,13 +59,19 @@
             <version>2.4.1</version>
             <scope>provided</scope>
         </dependency>
-        <!--
+        <dependency>
+            <groupId>com.github.Mojang</groupId>
+            <artifactId>LegacyLauncher</artifactId>
+            <version>59c38e589b</version>
+            <scope>provided</scope>
+        </dependency>
+<!--
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>9.4-1206-jdbc42</version>
         </dependency>
-        -->
+-->
     </dependencies>
     <build>
         <plugins>
