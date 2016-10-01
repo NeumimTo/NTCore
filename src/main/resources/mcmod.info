@@ -1,0 +1,16 @@
+[
+    {
+      "modid": "nt-core",
+      "name": "NT-Core",
+      "description": "Hibernate & EHCache + simple CDI",
+      "version": "1.5",
+      "credits": "Created by NeumimTo",
+      "mcversion": "1.10",
+      "url": "",
+      "updateUrl": "",
+      "authors": [ "NeumimTo" ],
+      "parent":"",
+      "screenshots": [],
+      "dependencies": []
+    }
+]

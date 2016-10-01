@@ -6,7 +6,7 @@
 
     <groupId>cz.neumimto</groupId>
     <artifactId>NTCore</artifactId>
-    <version>1.4</version>
+    <version>1.5</version>
 
     <repositories>
         <repository>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>spongeapi</artifactId>
-            <version>5.0.0-20160504.030150-18</version>
+            <version>5.0.0-20161001.043152-139</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

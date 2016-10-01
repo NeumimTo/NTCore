@@ -11,6 +11,7 @@ import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -34,13 +35,19 @@ import java.util.Properties;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "cz.neumimto.core", name = "NT-Core",version = "1.0")
+@Plugin(id = "nt-core", name = "NT-Core",version = "1.5")
 public class PluginCore {
 
     protected static PluginCore Instance;
 
     @Inject
     public Logger logger;
+
+    @Inject
+    @DefaultConfig(sharedRoot = false)
+    private Path config;
+
+    private Path path;
 
     @Listener
     public void setup(GameConstructionEvent event) {
@@ -51,10 +58,7 @@ public class PluginCore {
         PluginContainer implementation = game.getPlatform().getImplementation();
 
         if (implementation.getName().equalsIgnoreCase("SpongeVanilla")) {
-            File folder = new File("./mods/NtCore");
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
+            File folder = config.getParent().toFile();
             for (File file : folder.listFiles()) {
                 if (file.getName().endsWith("jar")) {
                     logger.info(file.getName()+ " will be added to the classpath.");
@@ -99,12 +103,12 @@ public class PluginCore {
     }
 
     protected Path copyDBProperties(Game game) {
-        Path path = Paths.get(new File(".")+File.separator+"mods"+File.separator+"database.properties");
+        Path path = Paths.get(config.getParent().toString()+File.separator+"database.properties");
         if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
             InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("database.properties");
             try {
                 Files.copy(resourceAsStream, path);
-                logger.warn("File \"database.properties\" has been copied into the mods-folder, Configure it and start the server again.");
+                logger.warn("File \"database.properties\" has been copied into the config/nt-core folder, Configure it and start the server again.");
                 game.getServer().shutdown();
             } catch (IOException e) {
                 e.printStackTrace();
