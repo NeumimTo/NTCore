@@ -1,14 +1,14 @@
 package cz.neumimto.core;
 
 import org.hibernate.SessionFactory;
-import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.impl.AbstractEvent;
 
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-public final class SessionFactoryCreatedEvent implements Event {
+public final class SessionFactoryCreatedEvent extends AbstractEvent {
     private final SessionFactory sessionFactory;
     public SessionFactoryCreatedEvent(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
