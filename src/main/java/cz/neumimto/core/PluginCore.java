@@ -35,7 +35,7 @@ import java.util.Properties;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core",version = "1.5")
+@Plugin(id = "nt-core", name = "NT-Core",version = "1.7")
 public class PluginCore {
 
     protected static PluginCore Instance;
@@ -79,6 +79,7 @@ public class PluginCore {
         }
 
         properties.put("hibernate.mapping.precedence","class ,hbm");
+        properties.put("hibernate.enable_lazy_load_no_trans", true);
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
         Sponge.getEventManager().post(ev);
         Configuration configuration = new Configuration();
