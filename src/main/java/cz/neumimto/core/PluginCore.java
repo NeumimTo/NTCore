@@ -3,7 +3,6 @@ package cz.neumimto.core;
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
 import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -35,7 +34,7 @@ import java.util.Properties;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core",version = "1.9")
+@Plugin(id = "nt-core", name = "NT-Core",version = "1.10")
 public class PluginCore {
 
     protected static PluginCore Instance;

@@ -1,7 +1,7 @@
 package cz.neumimto.core;
 
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.impl.AbstractEvent;
 
 import java.util.HashSet;
@@ -18,7 +18,7 @@ public class FindPersistenceContextEvent extends AbstractEvent {
 
     @Override
     public Cause getCause() {
-        return Cause.of(NamedCause.of("core",PluginCore.Instance));
+        return Cause.of(EventContext.empty(), PluginCore.Instance);
     }
 
 }

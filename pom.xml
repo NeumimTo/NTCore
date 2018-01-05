@@ -6,7 +6,7 @@
 
     <groupId>cz.neumimto</groupId>
     <artifactId>NTCore</artifactId>
-    <version>1.9</version>
+    <version>1.10</version>
 
     <repositories>
         <repository>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.github.NeumimTo</groupId>
             <artifactId>IoC</artifactId>
-            <version>5f7e0343b1</version>
+            <version>55a0991e84</version>
         </dependency>
         <dependency>
           <groupId>com.github.NeumimTo</groupId>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>spongeapi</artifactId>
-            <version>5.0.0-20161001.043152-139</version>
+            <version>7.1.0-20180104.092557-3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -74,6 +74,7 @@
 -->
     </dependencies>
     <build>
+        <defaultGoal>clean package</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
