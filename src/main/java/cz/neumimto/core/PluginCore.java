@@ -34,7 +34,7 @@ import java.util.Properties;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core",version = "1.10")
+@Plugin(id = "nt-core", name = "NT-Core",version = "1.11")
 public class PluginCore {
 
     protected static PluginCore Instance;

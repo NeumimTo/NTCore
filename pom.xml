@@ -6,7 +6,7 @@
 
     <groupId>cz.neumimto</groupId>
     <artifactId>NTCore</artifactId>
-    <version>1.10a</version>
+    <version>1.11</version>
 
     <repositories>
         <repository>
@@ -33,7 +33,7 @@
                     <groupId>com.typesafe</groupId>
                 </exclusion>
             </exclusions>
-            <version>4620634c46</version>
+            <version>master-8a3be86487-1</version>
         </dependency>
         <dependency>
             <groupId>org.spongepowered</groupId>
