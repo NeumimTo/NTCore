@@ -33,7 +33,7 @@
                     <groupId>com.typesafe</groupId>
                 </exclusion>
             </exclusions>
-            <version>eda382d2f5</version>
+            <version>f8de21c6df</version>
         </dependency>
         <dependency>
             <groupId>org.spongepowered</groupId>
