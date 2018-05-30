@@ -3,6 +3,7 @@ package cz.neumimto.core;
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
 import net.minecraft.launchwrapper.Launch;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
