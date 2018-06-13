@@ -1,9 +1,16 @@
 package cz.neumimto.core.localization;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Arg {
+
+    public static Arg EMPTY;
+    static {
+        EMPTY = arg(Collections.emptyMap());
+    }
+
     private Map<String, Object> map = new HashMap<>();
 
     public static Arg arg(final Map<String, Object> map) {

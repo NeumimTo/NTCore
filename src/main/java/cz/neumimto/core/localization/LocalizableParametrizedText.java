@@ -11,9 +11,6 @@ public class LocalizableParametrizedText {
     private String[] parts;
     private String[] args;
 
-    private static final char START_KEY = '{';
-    private static final char END_KEY = ')';
-
     public static LocalizableParametrizedText from(String string) {
         LocalizableParametrizedText text = new LocalizableParametrizedText();
         char[] chars = string.toCharArray();
@@ -51,4 +48,12 @@ public class LocalizableParametrizedText {
         return TextHelper.parse(v.toString());
     }
 
+
+    public Text toText() {
+        StringBuilder v = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            v.append(parts[i]);
+        }
+        return TextHelper.parse(v.toString());
+    }
 }
