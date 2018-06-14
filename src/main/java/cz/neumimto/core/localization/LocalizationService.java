@@ -33,8 +33,9 @@ public class LocalizationService {
                         logger.error("Missing translation in " + resourceBundle.getLocale() + "for string " + value);
                     } else {
                         try {
-                            field.set(null, LocalizableParametrizedText.from(string));
-                        } catch (IllegalAccessException e) {
+                            logger.info("Reading localizable string " + value);
+                            field.set(null, LocalizableParametrizedText.from(new String(string.getBytes("ISO-8859-1"), "UTF-8")));
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
