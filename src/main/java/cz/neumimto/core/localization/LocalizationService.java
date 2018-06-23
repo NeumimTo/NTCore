@@ -3,6 +3,7 @@ package cz.neumimto.core.localization;
 import cz.neumimto.core.ioc.Inject;
 import cz.neumimto.core.ioc.Singleton;
 import org.slf4j.Logger;
+import org.spongepowered.api.text.Text;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -33,7 +34,13 @@ public class LocalizationService {
                         logger.error("Missing translation in " + resourceBundle.getLocale() + "for string " + value);
                     } else {
                         try {
-                            field.set(null, LocalizableParametrizedText.from(string));
+                            if (LocalizableParametrizedText.class.isAssignableFrom(field.getType())) {
+                                field.set(null, LocalizableParametrizedText.from(string));
+                            } else if (Text.class.isAssignableFrom(field.getType())) {
+                                field.set(null, TextHelper.parse(string));
+                            } else {
+                                logger.error("Unknown type " + field.getType() + " for string " + value);
+                            }
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         }

@@ -12,6 +12,9 @@ public class LocalizableParametrizedText {
     private String[] args;
 
     public static LocalizableParametrizedText from(String string) {
+        if (!string.contains("{{") && !string.contains("}}")) {
+            return new TextWrapper(TextHelper.parse(string));
+        }
         LocalizableParametrizedText text = new LocalizableParametrizedText();
         char[] chars = string.toCharArray();
         List<String> parts = new ArrayList<>();
