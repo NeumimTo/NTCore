@@ -81,6 +81,10 @@ public class PluginCore {
 
         properties.put("hibernate.mapping.precedence","class ,hbm");
         properties.put("hibernate.enable_lazy_load_no_trans", true);
+        String s = (String) properties.get("database.type");
+        if (s == null) {
+
+        }
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
         Sponge.getEventManager().post(ev);
         Configuration configuration = new Configuration();
@@ -98,6 +102,7 @@ public class PluginCore {
             e.printStackTrace();
         }
         ServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+
         SessionFactory factory = configuration.buildSessionFactory(registry);
         IoC.get().registerInterfaceImplementation(SessionFactory.class,factory);
         SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
