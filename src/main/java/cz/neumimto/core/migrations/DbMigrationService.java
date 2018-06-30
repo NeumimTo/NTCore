@@ -1,7 +1,5 @@
 package cz.neumimto.core.migrations;
 
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.hibernate.HikariConnectionProvider;
 import cz.neumimto.core.ioc.Singleton;
 import org.spongepowered.api.GameState;
 import org.spongepowered.api.Sponge;
@@ -80,11 +78,9 @@ public class DbMigrationService {
         return anInt == 1;
     }
 
-    public boolean run(DbMigration migration) throws SQLException {
+    public void run(DbMigration migration) throws SQLException {
         connection.setAutoCommit(false);
         PreparedStatement preparedStatement = connection.prepareStatement(migration.getSql());
         preparedStatement.execute();
-
-        connection.prepareStatement()
     }
 }
