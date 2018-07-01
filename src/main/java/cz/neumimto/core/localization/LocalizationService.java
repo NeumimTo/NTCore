@@ -7,7 +7,10 @@ import org.spongepowered.api.text.Text;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 @Singleton
 public class LocalizationService {
@@ -29,22 +32,43 @@ public class LocalizationService {
                 if (field.getType() == LocalizableParametrizedText.class && Modifier.isStatic(field.getModifiers())) {
                     String value = localization.getAnnotation(Localization.class).value();
                     value = value + "." + field.getName().toLowerCase();
-                    String string = resourceBundle.getString(value);
-                    if (string == null) {
-                        logger.error("Missing translation in " + resourceBundle.getLocale() + "for string " + value);
-                    } else {
-                        try {
-                            if (LocalizableParametrizedText.class.isAssignableFrom(field.getType())) {
+                    try {
+                        if (LocalizableParametrizedText.class.isAssignableFrom(field.getType())) {
+                            try {
+                                String string = resourceBundle.getString(value);
                                 field.set(null, LocalizableParametrizedText.from(string));
-                            } else if (Text.class.isAssignableFrom(field.getType())) {
-                                field.set(null, TextHelper.parse(string));
-                            } else {
-                                logger.error("Unknown type " + field.getType() + " for string " + value);
+                            } catch (MissingResourceException e) {
+                                logger.error("Missing translation in " + resourceBundle.getLocale() + "for string " + value);
                             }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
+
+                        } else if (Text.class.isAssignableFrom(field.getType())) {
+                            try {
+                                String string = resourceBundle.getString(value);
+                                field.set(null, TextHelper.parse(string));
+                            } catch (MissingResourceException e) {
+                                logger.error("Missing translation in " + resourceBundle.getLocale() + "for string " + value);
+                            }
+
+                        } else if (List.class.isAssignableFrom(field.getType())) {
+                            List<Text> text = new ArrayList<>();
+                            try {
+                                String[] stringArray = resourceBundle.getStringArray(value);
+                                for (String s : stringArray) {
+                                    text.add(TextHelper.parse(s));
+                                }
+                                field.set(null, text);
+                            } catch (MissingResourceException e) {
+                                logger.error("Missing translation in " + resourceBundle.getLocale() + "for string " + value);
+                            }
+
+                        } else {
+                            logger.error("Unknown type " + field.getType() + " for string " + value);
                         }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
+
+
                 }
             }
         }
