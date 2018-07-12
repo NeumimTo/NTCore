@@ -28,7 +28,7 @@ public class Arg {
     }
 
     public Arg with(String s, Object o) {
-        map.put("%" + s + "%", o);
+        map.put(s, o);
         return this;
     }
 

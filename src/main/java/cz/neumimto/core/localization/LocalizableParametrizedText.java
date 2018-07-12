@@ -12,6 +12,9 @@ public class LocalizableParametrizedText {
     private String[] args;
 
     public static LocalizableParametrizedText from(String string) {
+        if (!string.contains("{{") && !string.contains("}}")) {
+            return new TextWrapper(TextHelper.parse(string));
+        }
         LocalizableParametrizedText text = new LocalizableParametrizedText();
         char[] chars = string.toCharArray();
         List<String> parts = new ArrayList<>();
@@ -44,6 +47,14 @@ public class LocalizableParametrizedText {
         StringBuilder v = new StringBuilder();
         for (int i = 0; i < parts.length; i++) {
             v.append(parts[i]).append(arg.getParams().get(args[i]));
+            if (i + 1 == parts.length && args.length > i ) {
+                i++;
+                while (i < args.length) {
+                    v.append(arg.getParams().get(args[i]));
+                    i++;
+                }
+                break;
+            }
         }
         return TextHelper.parse(v.toString());
     }

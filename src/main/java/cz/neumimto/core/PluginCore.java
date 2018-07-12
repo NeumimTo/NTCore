@@ -3,7 +3,6 @@ package cz.neumimto.core;
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
 import net.minecraft.launchwrapper.Launch;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -30,6 +29,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.logging.Level;
 
 //todo make possible more than one persistence context
 /**
@@ -51,6 +51,7 @@ public class PluginCore {
 
     @Listener
     public void setup(GameConstructionEvent event) {
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
         Game game = Sponge.getGame();
         IoC ioC = IoC.get();
         ioC.registerInterfaceImplementation(Game.class,game);
@@ -80,6 +81,10 @@ public class PluginCore {
 
         properties.put("hibernate.mapping.precedence","class ,hbm");
         properties.put("hibernate.enable_lazy_load_no_trans", true);
+        String s = (String) properties.get("database.type");
+        if (s == null) {
+
+        }
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
         Sponge.getEventManager().post(ev);
         Configuration configuration = new Configuration();
@@ -97,6 +102,7 @@ public class PluginCore {
             e.printStackTrace();
         }
         ServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+
         SessionFactory factory = configuration.buildSessionFactory(registry);
         IoC.get().registerInterfaceImplementation(SessionFactory.class,factory);
         SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
