@@ -8,6 +8,7 @@ import org.spongepowered.api.text.Text;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -90,11 +91,15 @@ public class LocalizationService {
     }
 
     public Text getText(String key) {
-        return TextHelper.parse((String) bundle.get(key));
+        String s = (String) bundle.get(key);
+        s = s == null ? "" : s;
+        return TextHelper.parse(s);
     }
 
     public List<Text> getTextList(String key) {
         String[] stringArray = (String[]) bundle.get(key);
+        if (stringArray == null)
+            return Collections.emptyList();
         return Stream.of(stringArray)
                 .map(TextHelper::parse)
                 .collect(Collectors.toList());
