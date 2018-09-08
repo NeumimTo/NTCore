@@ -7,6 +7,7 @@ import java.util.Map;
 public class Arg {
 
     public static Arg EMPTY;
+
     static {
         EMPTY = arg(Collections.emptyMap());
     }

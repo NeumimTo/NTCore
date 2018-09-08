@@ -5,9 +5,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import javax.persistence.EntityManager;
-import java.util.Set;
-
 /**
  * Created by NeumimTo on 28.11.2015.
  */
@@ -33,7 +30,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();
@@ -49,7 +48,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();
@@ -65,7 +66,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();
@@ -81,7 +84,9 @@ public abstract class GenericDao<E> {
             session.merge(e);
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();

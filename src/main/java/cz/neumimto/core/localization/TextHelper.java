@@ -20,7 +20,7 @@ public class TextHelper {
 
     public static Text parse(String text, Arg params) {
         for (Map.Entry<String, Object> par : params.getParams().entrySet()) {
-            text = text.replace(par.getKey(),par.getValue().toString());
+            text = text.replace(par.getKey(), par.getValue().toString());
         }
         return TextSerializers.FORMATTING_CODE.deserialize(text);
     }
