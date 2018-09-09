@@ -124,16 +124,18 @@ public class PluginCore {
         Configuration configuration = new Configuration();
         configuration.addProperties(properties);
         ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
+        String className = properties.get("hibernate.connection.driver_class").toString();
         try {
-            getClass().getClassLoader().loadClass(properties.get("hibernate.hikari.dataSourceClassName").toString());
+
+            logger.info("Loading driver class " + className);
+            getClass().getClassLoader().loadClass(className);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            logger.info("Loading driver class " + properties.get("hibernate.hikari.dataSourceClassName").toString());
-            Class.forName(properties.get("hibernate.hikari.dataSourceClassName").toString());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error("====================================================");
+            logger.error("Class " + className + " not found on the classpath! ");
+            logger.error("Possible causes: ");
+            logger.error("       - The database driver is not on the classpath");
+            logger.error("       - The classname is miss spelled");
+            logger.error("====================================================");
         }
         ServiceRegistry registry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties())
