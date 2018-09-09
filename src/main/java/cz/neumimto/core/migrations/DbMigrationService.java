@@ -4,8 +4,8 @@ import cz.neumimto.core.ioc.Singleton;
 import org.spongepowered.api.GameState;
 import org.spongepowered.api.Sponge;
 
-import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +28,7 @@ public class DbMigrationService {
     private Connection connection;
 
     //todo load from config
-    private String createTableStatement = "CREATE TABLE IF NOT EXISTS nt_core_migrations ("
+    private String createTableStatement = "CREATE TABLE IF NOT EXISTS nt_core_migrations("
             + "  author VARCHAR(255),"
             + "  ID VARCHAR(255),"
             + "  executed Date"
@@ -36,16 +36,13 @@ public class DbMigrationService {
 
     private String hasRun = "SELECT count(*) as count from nt_core_migrations WHERE ID='%ID%'";
 
+    private String databaseProductName;
+
     public void requestMigration(String id) {
-        if (Sponge.getGame().getState() != GameState.CONSTRUCTION) {
-            throw new RuntimeException("Not GameState.CONSTRUCTION");
+        if (Sponge.getGame().getState() != GameState.PRE_INITIALIZATION) {
+            throw new RuntimeException("Not GameState.PRE_INITIALIZATION");
         }
         migrationScopes.add(id);
-    }
-
-
-    public void addMigrations(URL... urls) {
-
     }
 
     public void scopeFinished(String id) {
@@ -59,8 +56,17 @@ public class DbMigrationService {
         }
     }
 
-    private void startMigration() throws SQLException {
+    public void setConnection(Connection connection) throws SQLException {
+        this.connection = connection;
+        DatabaseMetaData metaData = connection.getMetaData();
+        this.databaseProductName = metaData.getDatabaseProductName();
+    }
 
+    public String getDatabaseProductName() {
+        return databaseProductName;
+    }
+
+    private void startMigration() throws SQLException {
         Statement statement = connection.createStatement();
         statement.execute(createTableStatement);
 

@@ -22,11 +22,9 @@ import java.util.stream.Stream;
 @Singleton
 public class LocalizationService {
 
+    private final List<Class<?>> localizations = new ArrayList<>();
     @Inject
     private Logger logger;
-
-    private final List<Class<?>> localizations = new ArrayList<>();
-
     private Map<String, Object> bundle = new HashMap<>();
 
     public void registerClass(Class<?> clazz) {
@@ -98,8 +96,9 @@ public class LocalizationService {
 
     public List<Text> getTextList(String key) {
         String[] stringArray = (String[]) bundle.get(key);
-        if (stringArray == null)
+        if (stringArray == null) {
             return Collections.emptyList();
+        }
         return Stream.of(stringArray)
                 .map(TextHelper::parse)
                 .collect(Collectors.toList());

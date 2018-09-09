@@ -9,7 +9,9 @@ import org.spongepowered.api.event.impl.AbstractEvent;
  * Created by NeumimTo on 28.11.2015.
  */
 public final class SessionFactoryCreatedEvent extends AbstractEvent {
+
     private final SessionFactory sessionFactory;
+
     public SessionFactoryCreatedEvent(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }

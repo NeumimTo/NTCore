@@ -2,10 +2,12 @@ package cz.neumimto.core;
 
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
+import cz.neumimto.core.migrations.DbMigrationService;
 import net.minecraft.launchwrapper.Launch;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
@@ -28,14 +30,18 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 
 //todo make possible more than one persistence context
+
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core",version = "1.12")
+@Plugin(id = "nt-core", name = "NT-Core", version = "1.12")
 public class PluginCore {
 
     protected static PluginCore Instance;
@@ -49,20 +55,32 @@ public class PluginCore {
 
     private Path path;
 
+    public static void loadJarFile(File f) {
+        try {
+            Launch.classLoader.addURL(f.toURI().toURL());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static URLClassLoader getClassLoader() {
+        return Launch.classLoader;
+    }
+
     @Listener
     public void setup(GameConstructionEvent event) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
         Game game = Sponge.getGame();
         IoC ioC = IoC.get();
-        ioC.registerInterfaceImplementation(Game.class,game);
-        ioC.registerInterfaceImplementation(Logger.class,logger);
+        ioC.registerInterfaceImplementation(Game.class, game);
+        ioC.registerInterfaceImplementation(Logger.class, logger);
         PluginContainer implementation = game.getPlatform().getImplementation();
 
         if (implementation.getName().equalsIgnoreCase("SpongeVanilla")) {
             File folder = config.getParent().toFile();
             for (File file : folder.listFiles()) {
                 if (file.getName().endsWith("jar")) {
-                    logger.info(file.getName()+ " will be added to the classpath.");
+                    logger.info(file.getName() + " will be added to the classpath.");
                     loadJarFile(file);
                 }
             }
@@ -79,12 +97,28 @@ public class PluginCore {
             e.printStackTrace();
         }
 
-        properties.put("hibernate.mapping.precedence","class ,hbm");
-        properties.put("hibernate.enable_lazy_load_no_trans", true);
-        String s = (String) properties.get("database.type");
-        if (s == null) {
+        /*
+        I dont want these to be changeable from confi file, so just set them every time
+         */
+        properties.put(Environment.ARTIFACT_PROCESSING_ORDER, "class, hbm");
+        properties.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
+        properties.put(Environment.HBM2DDL_AUTO, "validate");
 
+        String s = (String) properties.get("hibernate.connection.url");
+        if (s == null) {
+            throw new RuntimeException("hibernate.connection.url is missing in database.properties file");
         }
+
+        DbMigrationService build = IoC.get().build(DbMigrationService.class);
+        try {
+            Connection connection = DriverManager.getConnection(s);
+            build.setConnection(connection);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
         Sponge.getEventManager().post(ev);
         Configuration configuration = new Configuration();
@@ -96,21 +130,25 @@ public class PluginCore {
             e.printStackTrace();
         }
         try {
-            logger.info("Loading driver class "+properties.get("hibernate.hikari.dataSourceClassName").toString());
+            logger.info("Loading driver class " + properties.get("hibernate.hikari.dataSourceClassName").toString());
             Class.forName(properties.get("hibernate.hikari.dataSourceClassName").toString());
-         } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        ServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+        ServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .applySettings(configuration.getProperties())
+                .build();
+
 
         SessionFactory factory = configuration.buildSessionFactory(registry);
-        IoC.get().registerInterfaceImplementation(SessionFactory.class,factory);
+
+        IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
         SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
         Sponge.getEventManager().post(e);
     }
 
     protected Path copyDBProperties(Game game) {
-        Path path = Paths.get(config.getParent().toString()+File.separator+"database.properties");
+        Path path = Paths.get(config.getParent().toString() + File.separator + "database.properties");
         if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
             InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("database.properties");
             try {
@@ -125,21 +163,9 @@ public class PluginCore {
         return path;
     }
 
-    public static void loadJarFile(File f) {
-        try {
-            Launch.classLoader.addURL(f.toURI().toURL());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static URLClassLoader getClassLoader() {
-        return Launch.classLoader;
-    }
-
     @Listener
     public void close(GameStoppedServerEvent event) {
 
-       // IoC.get().build(SessionFactory.class).close();
+        // IoC.get().build(SessionFactory.class).close();
     }
 }

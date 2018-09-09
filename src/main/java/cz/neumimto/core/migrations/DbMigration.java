@@ -33,13 +33,6 @@ public class DbMigration {
 
     }
 
-    public void setSql(String sql) {
-        if (Objects.isNull(id) || Objects.isNull(date) || Objects.isNull(author)) {
-            throw new RuntimeException("Invalid migration, at least one of id, date, author is missing");
-        }
-        this.sql = sql;
-    }
-
     public List<DbMigration> from(URL... sqlFiles) {
         List<DbMigration> list = new ArrayList<>();
         for (URL sqlFile : sqlFiles) {
@@ -103,5 +96,12 @@ public class DbMigration {
 
     public String getSql() {
         return sql;
+    }
+
+    public void setSql(String sql) {
+        if (Objects.isNull(id) || Objects.isNull(date) || Objects.isNull(author)) {
+            throw new RuntimeException("Invalid migration, at least one of id, date, author is missing");
+        }
+        this.sql = sql;
     }
 }
