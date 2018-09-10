@@ -77,6 +77,10 @@ public class DbMigrationService {
         }
     }
 
+    public void addMigration(String data) {
+
+    }
+
     public boolean hasRun(DbMigration migration) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(hasRun.replaceAll("%ID%", migration.getId()));
         ResultSet resultSet = preparedStatement.executeQuery();
