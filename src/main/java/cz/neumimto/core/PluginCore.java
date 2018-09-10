@@ -98,11 +98,17 @@ public class PluginCore {
         }
 
         /*
-        I dont want these to be changeable from confi file, so just set them every time
+        I dont want these to be changeable from config file, so just set them every time
          */
         properties.put(Environment.ARTIFACT_PROCESSING_ORDER, "class, hbm");
         properties.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
-        properties.put(Environment.HBM2DDL_AUTO, "validate");
+
+        /*
+        Dont override if setup otherwise
+         */
+        if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
+            properties.put(Environment.HBM2DDL_AUTO, "create");
+        }
 
         String s = (String) properties.get("hibernate.connection.url");
         if (s == null) {
@@ -113,7 +119,7 @@ public class PluginCore {
         try {
             Connection connection = DriverManager.getConnection(s);
             build.setConnection(connection);
-
+            Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this));
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -46,12 +46,6 @@
             <artifactId>hibernate-entitymanager</artifactId>
             <version>5.3.6.Final</version>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jboss-logging</artifactId>
-                    <groupId>org.jboss.logging</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
