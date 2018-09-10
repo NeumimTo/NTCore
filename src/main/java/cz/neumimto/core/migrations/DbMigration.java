@@ -8,19 +8,16 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Created by NeumimTo on 24.6.2018.
  */
-public class DbMigration {
+public class DbMigration implements Comparable<DbMigration> {
 
     private static DbMigration cached;
     private String id;
@@ -29,28 +26,12 @@ public class DbMigration {
     private Date date;
     private String sql = "";
 
-    private DbMigration() {
-
-    }
-
-    public List<DbMigration> from(URL... sqlFiles) {
-        List<DbMigration> list = new ArrayList<>();
-        for (URL sqlFile : sqlFiles) {
-            list.addAll(from(sqlFile));
-        }
-        list.sort(Comparator.comparing(o -> o.date));
-        return list;
-    }
-
-    private List<DbMigration> from(URL fileName) {
-        cached = new DbMigration();
+    public static synchronized List<DbMigration> from(String data) {
         Pattern compile = Pattern.compile("(?<=:).*");
 
         List<DbMigration> list = new ArrayList<>();
-        try (Stream<String> stream = Files.lines(Paths.get(fileName.toURI()))) {
-
-            stream.forEachOrdered(s -> {
-
+        Arrays.stream(data.split(System.lineSeparator()))
+                .forEach(s -> {
                 if (s.startsWith("--@author:")) {
                     Matcher matcher = compile.matcher(s);
                     matcher.find();
@@ -77,12 +58,9 @@ public class DbMigration {
                     matcher.find();
                     cached.id = matcher.group();
                 } else {
-                    cached.setSql(sql += s);
+                    cached.setSql(cached.sql += s);
                 }
             });
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException("Could not read SQL file " + fileName);
-        }
         return list;
     }
 
@@ -103,5 +81,10 @@ public class DbMigration {
             throw new RuntimeException("Invalid migration, at least one of id, date, author is missing");
         }
         this.sql = sql;
+    }
+
+    @Override
+    public int compareTo(DbMigration o) {
+        return date.after(o.date) ? 1 : -1;
     }
 }

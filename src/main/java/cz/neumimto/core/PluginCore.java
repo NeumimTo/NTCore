@@ -44,7 +44,7 @@ import java.util.logging.Level;
 @Plugin(id = "nt-core", name = "NT-Core", version = "1.12")
 public class PluginCore {
 
-    protected static PluginCore Instance;
+    public static PluginCore Instance;
 
     @Inject
     public Logger logger;
