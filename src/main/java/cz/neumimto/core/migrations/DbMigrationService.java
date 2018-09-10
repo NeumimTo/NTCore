@@ -2,18 +2,13 @@ package cz.neumimto.core.migrations;
 
 import cz.neumimto.core.PluginCore;
 import cz.neumimto.core.ioc.Singleton;
-import org.lwjgl.Sys;
-import org.spongepowered.api.GameState;
 import org.spongepowered.api.Sponge;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by NeumimTo on 24.6.2018.
@@ -37,7 +32,7 @@ public class DbMigrationService {
         return databaseProductName;
     }
 
-    private void startMigration() throws SQLException, IOException {
+    public void startMigration() throws SQLException, IOException {
         Statement statement = connection.createStatement();
         String s = Sponge.getAssetManager().getAsset(PluginCore.Instance, "generic/create-migration-table.sql").get().readString();
         statement.execute(s);
@@ -46,6 +41,9 @@ public class DbMigrationService {
         try {
             for (DbMigration migration : migrations) {
                 if (!hasRun(migration)) {
+                    System.out.println("=================");
+                    System.out.println(migration.getSql());
+                    System.out.println("=================");
                     run(migration);
                     connection.commit();
                 }

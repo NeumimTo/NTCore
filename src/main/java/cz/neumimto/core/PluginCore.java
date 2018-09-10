@@ -123,7 +123,11 @@ public class PluginCore {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        try {
+            build.startMigration();
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
 
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
         Sponge.getEventManager().post(ev);
