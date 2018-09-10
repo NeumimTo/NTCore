@@ -69,6 +69,7 @@ public class PluginCore {
 
     @Listener
     public void setup(GameConstructionEvent event) {
+        Instance = this;
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
         Game game = Sponge.getGame();
         IoC ioC = IoC.get();
