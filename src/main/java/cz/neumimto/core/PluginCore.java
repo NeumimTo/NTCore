@@ -107,7 +107,7 @@ public class PluginCore {
         Dont override if setup otherwise
          */
         if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
-            properties.put(Environment.HBM2DDL_AUTO, "create");
+            properties.put(Environment.HBM2DDL_AUTO, "validate");
         }
 
         String s = (String) properties.get("hibernate.connection.url");
