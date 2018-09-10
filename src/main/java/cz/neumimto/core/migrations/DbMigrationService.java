@@ -47,11 +47,12 @@ public class DbMigrationService {
             for (DbMigration migration : migrations) {
                 if (!hasRun(migration)) {
                     run(migration);
+                    connection.commit();
                 }
             }
-            connection.commit();
         } catch (Exception e) {
             e.printStackTrace();
+            connection.rollback();
         } finally {
             migrations = null;
             connection.close();
