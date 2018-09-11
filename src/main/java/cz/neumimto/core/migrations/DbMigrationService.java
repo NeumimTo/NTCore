@@ -113,7 +113,7 @@ public class DbMigrationService {
             try {
                 e.printStackTrace();
                 connection.rollback();
-                throw new RuntimeException();
+                throw new RuntimeException(e);
             } catch (SQLException e1) {
                 e.printStackTrace();
             }
