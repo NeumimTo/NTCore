@@ -41,8 +41,8 @@ public class DbMigration implements Comparable<DbMigration> {
                     e.printStackTrace();
                 }
             } else if (s.startsWith("--@id:")) {
+                list.add(cached);
                 if (!cached.sql.isEmpty()) {
-                    list.add(cached);
                     cached = new DbMigration();
                     list.add(cached);
                 }

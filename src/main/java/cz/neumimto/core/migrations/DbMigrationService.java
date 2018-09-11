@@ -1,10 +1,12 @@
 package cz.neumimto.core.migrations;
 
-import cz.neumimto.core.PluginCore;
+import com.google.common.io.CharStreams;
 import cz.neumimto.core.ioc.Singleton;
-import org.spongepowered.api.Sponge;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +36,8 @@ public class DbMigrationService {
 
     public void startMigration() throws SQLException, IOException {
         Statement statement = connection.createStatement();
-        String s = Sponge.getAssetManager().getAsset(PluginCore.Instance, "generic/create-migration-table.sql").get().readString();
+        InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("create-migration-table.sql");
+        String s = CharStreams.toString(new InputStreamReader(resourceAsStream, Charset.forName("UTF-8")));
         statement.execute(s);
         Collections.sort(migrations);
         connection.setAutoCommit(false);
@@ -68,13 +71,17 @@ public class DbMigrationService {
 
     private boolean hasRun(DbMigration migration) {
         try {
-            String s = Sponge.getAssetManager().getAsset(PluginCore.Instance, "generic/check.sql").get().readString();
+            InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("check.sql");
+            String s = CharStreams.toString(new InputStreamReader(resourceAsStream, Charset.forName("UTF-8")));
             PreparedStatement preparedStatement = connection.prepareStatement(s.replaceAll("%s", migration.getId()));
             ResultSet resultSet = null;
 
             resultSet = preparedStatement.executeQuery();
-            int anInt = resultSet.getInt(0);
-            return anInt == 1;
+            if (!resultSet.next()) {
+                return false;
+            }
+            long l = resultSet.getLong("count");
+            return l == 1;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

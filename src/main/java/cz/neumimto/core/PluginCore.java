@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
+
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -121,12 +121,8 @@ public class PluginCore {
             Connection connection = DriverManager.getConnection(s);
             build.setConnection(connection);
             Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        try {
             build.startMigration();
-        } catch (SQLException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
