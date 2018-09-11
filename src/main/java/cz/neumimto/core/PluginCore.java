@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -117,13 +118,20 @@ public class PluginCore {
         }
 
         DbMigrationService build = IoC.get().build(DbMigrationService.class);
+        Connection connection = null;
         try {
-            Connection connection = DriverManager.getConnection(s);
+            connection = DriverManager.getConnection(s, properties.getProperty(Environment.USER), properties.getProperty(Environment.PASS));
             build.setConnection(connection);
             Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this));
             build.startMigration();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         FindPersistenceContextEvent ev = new FindPersistenceContextEvent();

@@ -48,7 +48,6 @@ public class DbMigrationService {
                     System.out.println(migration.getSql());
                     System.out.println("=================");
                     run(migration);
-                    connection.commit();
                 }
             }
         } catch (Exception e) {
@@ -56,8 +55,6 @@ public class DbMigrationService {
             connection.rollback();
         } finally {
             migrations = null;
-            connection.close();
-            connection = null;
         }
     }
 
@@ -70,12 +67,12 @@ public class DbMigrationService {
     }
 
     private boolean hasRun(DbMigration migration) {
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
         try {
             InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("check.sql");
             String s = CharStreams.toString(new InputStreamReader(resourceAsStream, Charset.forName("UTF-8")));
-            PreparedStatement preparedStatement = connection.prepareStatement(s.replaceAll("%s", migration.getId()));
-            ResultSet resultSet = null;
-
+            preparedStatement = connection.prepareStatement(s.replaceAll("%s", migration.getId()));
             resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
                 return false;
@@ -84,16 +81,55 @@ public class DbMigrationService {
             return l == 1;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void run(DbMigration migration) {
+        PreparedStatement preparedStatement1 = null;
+        PreparedStatement preparedStatement2 = null;
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(migration.getSql());
-            preparedStatement.execute();
+            preparedStatement1 = connection.prepareStatement(migration.getSql());
+            preparedStatement1.execute();
+            connection.commit();
 
-        } catch (SQLException e) {
-            throw new RuntimeException();
+            InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("insert.sql");
+            String s = CharStreams.toString(new InputStreamReader(resourceAsStream, Charset.forName("UTF-8")));
+
+            preparedStatement2 = connection.prepareStatement(String.format(s, migration.getAuthor(), migration.getId(), migration.getNote()));
+            preparedStatement2.execute();
+            connection.commit();
+        } catch (Exception e) {
+            try {
+                e.printStackTrace();
+                connection.rollback();
+                throw new RuntimeException();
+            } catch (SQLException e1) {
+                e.printStackTrace();
+            }
+        } finally {
+            try {
+                if (preparedStatement1 != null) {
+                    preparedStatement1.close();
+                }
+                if (preparedStatement2 != null) {
+                    preparedStatement2.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
         }
     }
 }

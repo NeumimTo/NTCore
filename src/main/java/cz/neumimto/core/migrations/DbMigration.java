@@ -21,7 +21,7 @@ public class DbMigration implements Comparable<DbMigration> {
         Pattern compile = Pattern.compile("(?<=:).*");
         DbMigration cached = new DbMigration();
         List<DbMigration> list = new ArrayList<>();
-        String[] split = data.split(System.lineSeparator());
+        String[] split = data.split("\n");
         for (String s : split) {
             if (s.startsWith("--@author:")) {
                 Matcher matcher = compile.matcher(s);
@@ -66,6 +66,10 @@ public class DbMigration implements Comparable<DbMigration> {
 
     public String getSql() {
         return sql;
+    }
+
+    public String getNote() {
+        return note;
     }
 
     public void setSql(String sql) {
