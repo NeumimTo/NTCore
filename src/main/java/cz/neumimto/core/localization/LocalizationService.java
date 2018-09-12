@@ -31,8 +31,13 @@ public class LocalizationService {
         localizations.add(clazz);
     }
 
-    public synchronized void loadResourceBundle(String path, Locale locale) {
-        ResourceBundle bundle = ResourceBundle.getBundle(path, locale);
+    public synchronized void loadResourceBundle(String path, Locale locale, ClassLoader classLoader) {
+        ResourceBundle bundle = null;
+        if (classLoader == null) {
+            bundle = ResourceBundle.getBundle(path, locale);
+        } else {
+            bundle = ResourceBundle.getBundle(path, locale, classLoader);
+        }
         Enumeration<String> keys = bundle.getKeys();
         while (keys.hasMoreElements()) {
             String s = keys.nextElement();

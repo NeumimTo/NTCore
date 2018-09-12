@@ -71,7 +71,6 @@ public class PluginCore {
     @Listener
     public void setup(GameConstructionEvent event) {
         Instance = this;
-        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
         Game game = Sponge.getGame();
         IoC ioC = IoC.get();
         ioC.registerInterfaceImplementation(Game.class, game);
@@ -91,6 +90,7 @@ public class PluginCore {
 
     @Listener
     public void setupHibernate(GamePreInitializationEvent event) {
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
         Path p = copyDBProperties(Sponge.getGame());
         Properties properties = new Properties();
         try (FileInputStream stream = new FileInputStream(p.toFile())) {
@@ -111,7 +111,7 @@ public class PluginCore {
         if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
             properties.put(Environment.HBM2DDL_AUTO, "validate");
         }
-
+        properties.put(Environment.LOG_SESSION_METRICS, false);
         String s = (String) properties.get("hibernate.connection.url");
         if (s == null) {
             throw new RuntimeException("hibernate.connection.url is missing in database.properties file");
