@@ -1,0 +1,40 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'org.spongepowered.plugin' version '0.8.1'
+}
+
+apply plugin: 'java-library'
+
+group = 'cz.neumimto'
+version = '1.13-SNAPSHOT'
+
+sourceCompatibility = targetCompatibility = 1.8
+compileJava.options.encoding = compileTestJava.options.encoding = 'UTF-8'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'http://repo.spongepowered.org/maven'
+    }
+    maven {
+        name = 'jitpack.io'
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    api 'com.github.NeumimTo:IoC:55a0991e84'
+    api 'com.github.NeumimTo:HoconConfigMapper:f8de21c6df'
+    api 'org.hibernate:hibernate-entitymanager:5.3.6.Final'
+
+    compileOnly 'org.spongepowered:spongeapi:' + project.spongeApiVersion
+    compileOnly 'com.zaxxer:HikariCP:2.4.1'
+    compileOnly 'com.github.Mojang:LegacyLauncher:59c38e589b'
+}
+
+shadowJar {
+    classifier = 'shaded'
+}
+
+build.dependsOn(shadowJar)
