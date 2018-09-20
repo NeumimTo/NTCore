@@ -27,9 +27,9 @@ dependencies {
     api 'com.github.NeumimTo:IoC:55a0991e84'
     api 'com.github.NeumimTo:HoconConfigMapper:f8de21c6df'
     api 'org.hibernate:hibernate-entitymanager:5.3.6.Final'
+    api 'com.zaxxer:HikariCP:2.4.1'
 
     compileOnly 'org.spongepowered:spongeapi:' + project.spongeApiVersion
-    compileOnly 'com.zaxxer:HikariCP:2.4.1'
     compileOnly 'com.github.Mojang:LegacyLauncher:59c38e589b'
 }
 
