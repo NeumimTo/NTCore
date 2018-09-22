@@ -42,7 +42,7 @@ import java.util.logging.Level;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core", version = "1.12")
+@Plugin(id = "nt-core", name = "NT-Core", version = "1.13-SNAPSHOT-2")
 public class PluginCore {
 
     public static PluginCore Instance;
