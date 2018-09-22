@@ -1,4 +1,4 @@
-package cz.neumimto.core.dao.genericDao;
+package cz.neumimto.core.dao;
 
 
 import org.hibernate.Session;
