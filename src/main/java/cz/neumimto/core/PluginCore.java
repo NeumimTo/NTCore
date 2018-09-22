@@ -32,9 +32,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
-
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 //todo make possible more than one persistence context
@@ -55,6 +56,8 @@ public class PluginCore {
     private Path config;
 
     private Path path;
+
+    private static Map<String, SessionFactory> sessionFactories = new ConcurrentHashMap<>();
 
     public static void loadJarFile(File f) {
         try {
@@ -184,5 +187,21 @@ public class PluginCore {
     public void close(GameStoppedServerEvent event) {
 
         // IoC.get().build(SessionFactory.class).close();
+    }
+
+    public SessionFactory getSessionFactoryByName(String name) {
+        if (sessionFactories.size() == 1) {
+            return sessionFactories.values().iterator().next();
+        }
+        SessionFactory sessionFactory = sessionFactories.get(name);
+        if (sessionFactory == null) {
+            logger.error("==========================");
+            logger.error("Attempted to get a sessionfactory with id " + name);
+            logger.error("");
+            logger.error("No factory found");
+            logger.error("Configure session factory by creating a definition in config/nt-core/database."+name+".properties");
+            logger.error("==========================");
+        }
+        return sessionFactory;
     }
 }

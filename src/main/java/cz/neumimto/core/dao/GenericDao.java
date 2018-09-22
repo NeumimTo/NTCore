@@ -18,11 +18,10 @@ import org.hibernate.Transaction;
  */
 public abstract class GenericDao<E> {
 
-    @cz.neumimto.core.ioc.Inject
-    protected SessionFactory factory;
+    public abstract SessionFactory getFactory();
 
     public void update(E e) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -40,7 +39,7 @@ public abstract class GenericDao<E> {
     }
 
     public void save(E e) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -58,7 +57,7 @@ public abstract class GenericDao<E> {
     }
 
     public void remove(E e) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -76,7 +75,7 @@ public abstract class GenericDao<E> {
     }
 
     public void merge(E e, Long id) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
