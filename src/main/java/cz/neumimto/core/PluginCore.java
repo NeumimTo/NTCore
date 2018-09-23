@@ -146,7 +146,7 @@ public class PluginCore {
                     }
                 }
 
-                FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
+                FindPersistenceContextEvent ev = new FindPersistenceContextEvent(unit);
                 Sponge.getEventManager().post(ev);
                 Configuration configuration = new Configuration();
                 configuration.addProperties(properties);

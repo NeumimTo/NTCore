@@ -18,6 +18,10 @@ public class FindDbSchemaMigrationsEvent implements Event {
         return unit;
     }
 
+    public boolean validForContext(String str) {
+        return unit.equals("*") || unit.equals(str);
+    }
+
     @Override
     public Cause getCause() {
         return Cause.of(EventContext.empty(), core);
