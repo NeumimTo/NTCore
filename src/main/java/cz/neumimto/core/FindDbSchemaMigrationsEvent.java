@@ -7,9 +7,15 @@ import org.spongepowered.api.event.cause.EventContext;
 public class FindDbSchemaMigrationsEvent implements Event {
 
     private final PluginCore core;
+    private final String unit;
 
-    public FindDbSchemaMigrationsEvent(PluginCore core) {
+    public FindDbSchemaMigrationsEvent(PluginCore core, String unit) {
         this.core = core;
+        this.unit = unit;
+    }
+
+    public String getUnit() {
+        return unit;
     }
 
     @Override

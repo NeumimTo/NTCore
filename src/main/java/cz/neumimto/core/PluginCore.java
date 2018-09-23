@@ -95,76 +95,88 @@ public class PluginCore {
     public void setupHibernate(GamePreInitializationEvent event) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
         Path p = copyDBProperties(Sponge.getGame());
-        Properties properties = new Properties();
-        try (FileInputStream stream = new FileInputStream(p.toFile())) {
-            properties.load(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        for (File file : p.toFile().listFiles()) {
+            String name = file.getName();
+            if (name.startsWith("database") && name.endsWith(".properties")) {
+                String[] split = name.split("\\.");
+                String unit = "*";
+                if (split.length == 3) {
+                    unit = split[2];
+                }
+                Properties properties = new Properties();
+                try (FileInputStream stream = new FileInputStream(p.toFile())) {
+                    properties.load(stream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
         /*
         I dont want these to be changeable from config file, so just set them every time
          */
-        properties.put(Environment.ARTIFACT_PROCESSING_ORDER, "class, hbm");
-        properties.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
+                properties.put(Environment.ARTIFACT_PROCESSING_ORDER, "class, hbm");
+                properties.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
 
         /*
         Dont override if setup otherwise
          */
-        if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
-            properties.put(Environment.HBM2DDL_AUTO, "validate");
-        }
-        properties.put(Environment.LOG_SESSION_METRICS, false);
-        String s = (String) properties.get("hibernate.connection.url");
-        if (s == null) {
-            throw new RuntimeException("hibernate.connection.url is missing in database.properties file");
-        }
+                if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
+                    properties.put(Environment.HBM2DDL_AUTO, "validate");
+                }
+                properties.put(Environment.LOG_SESSION_METRICS, false);
+                String s = (String) properties.get("hibernate.connection.url");
+                if (s == null) {
+                    throw new RuntimeException("hibernate.connection.url is missing in database.properties file");
+                }
 
-        DbMigrationService build = IoC.get().build(DbMigrationService.class);
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(s, properties.getProperty(Environment.USER), properties.getProperty(Environment.PASS));
-            build.setConnection(connection);
-            Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this));
-            build.startMigration();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                DbMigrationService build = IoC.get().build(DbMigrationService.class);
+                Connection connection = null;
+                try {
+                    connection = DriverManager.getConnection(s, properties.getProperty(Environment.USER), properties.getProperty(Environment.PASS));
+                    build.setConnection(connection);
+                    Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this, unit));
+                    build.startMigration();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
+                Sponge.getEventManager().post(ev);
+                Configuration configuration = new Configuration();
+                configuration.addProperties(properties);
+                ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
+                String className = properties.get("hibernate.connection.driver_class").toString();
+                try {
+
+                    logger.info("Loading driver class " + className);
+                    getClass().getClassLoader().loadClass(className);
+                } catch (ClassNotFoundException e) {
+                    logger.error("====================================================");
+                    logger.error("Class " + className + " not found on the classpath! ");
+                    logger.error("Possible causes: ");
+                    logger.error("       - The database driver is not on the classpath");
+                    logger.error("       - The classname is miss spelled");
+                    logger.error("====================================================");
+                }
+                ServiceRegistry registry = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties())
+                        .build();
+
+
+                SessionFactory factory = configuration.buildSessionFactory(registry);
+
+                IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
+                SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
+                Sponge.getEventManager().post(e);
             }
         }
 
-        FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
-        Sponge.getEventManager().post(ev);
-        Configuration configuration = new Configuration();
-        configuration.addProperties(properties);
-        ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
-        String className = properties.get("hibernate.connection.driver_class").toString();
-        try {
-
-            logger.info("Loading driver class " + className);
-            getClass().getClassLoader().loadClass(className);
-        } catch (ClassNotFoundException e) {
-            logger.error("====================================================");
-            logger.error("Class " + className + " not found on the classpath! ");
-            logger.error("Possible causes: ");
-            logger.error("       - The database driver is not on the classpath");
-            logger.error("       - The classname is miss spelled");
-            logger.error("====================================================");
-        }
-        ServiceRegistry registry = new StandardServiceRegistryBuilder()
-                .applySettings(configuration.getProperties())
-                .build();
-
-
-        SessionFactory factory = configuration.buildSessionFactory(registry);
-
-        IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
-        SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
-        Sponge.getEventManager().post(e);
     }
 
     protected Path copyDBProperties(Game game) {
@@ -180,7 +192,7 @@ public class PluginCore {
                 e.printStackTrace();
             }
         }
-        return path;
+        return path.getParent();
     }
 
     @Listener
