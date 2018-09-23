@@ -105,21 +105,21 @@ public class PluginCore {
                     unit = split[2];
                 }
                 Properties properties = new Properties();
-                try (FileInputStream stream = new FileInputStream(p.toFile())) {
+                try (FileInputStream stream = new FileInputStream(file)) {
                     properties.load(stream);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-        /*
-        I dont want these to be changeable from config file, so just set them every time
-         */
+                /*
+                I dont want these to be changeable from config file, so just set them every time
+                 */
                 properties.put(Environment.ARTIFACT_PROCESSING_ORDER, "class, hbm");
                 properties.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
 
-        /*
-        Dont override if setup otherwise
-         */
+                /*
+                Dont override if setup otherwise
+                 */
                 if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
                     properties.put(Environment.HBM2DDL_AUTO, "validate");
                 }
