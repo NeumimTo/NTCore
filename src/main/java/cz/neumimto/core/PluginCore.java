@@ -174,6 +174,7 @@ public class PluginCore {
                 IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
                 SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
                 Sponge.getEventManager().post(e);
+                sessionFactories.put(unit, factory);
             }
         }
 
