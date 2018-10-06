@@ -1,12 +1,27 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
-  //  id 'org.spongepowered.plugin' version '0.8.1'
+    id 'org.spongepowered.plugin' version '0.8.1'
+    id "net.kyori.blossom" version "1.1.0"
 }
 
 apply plugin: 'java-library'
 
 group = 'cz.neumimto'
-version = '1.13-SNAPSHOT-2'
+version = '1.13-SNAPSHOT-6'
+
+sponge {
+    plugin {
+        meta {
+            version = getVersion().toString()
+        }
+    }
+}
+
+blossom {
+    replaceToken '@VERSION@', getVersion().toString()
+}
 
 sourceCompatibility = targetCompatibility = 1.8
 compileJava.options.encoding = compileTestJava.options.encoding = 'UTF-8'
@@ -33,6 +48,7 @@ dependencies {
     compileOnly 'com.github.Mojang:LegacyLauncher:59c38e589b'
 }
 
+
 shadowJar {
     classifier = 'shaded'
 }
@@ -47,3 +63,11 @@ artifacts {
 }
 
 build.dependsOn(shadowJar)
+
+
+processResources {
+    from (sourceSets.main.java) {
+        include("*.java")
+        filter(ReplaceTokens, tokens: ["@@VERSION@@" : project.version])
+    }
+}

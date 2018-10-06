@@ -43,7 +43,7 @@ import java.util.logging.Level;
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core", version = "1.13-SNAPSHOT-2")
+@Plugin(id = "nt-core", name = "NT-Core", version = "@VERSION@")
 public class PluginCore {
 
     public static PluginCore Instance;
@@ -93,6 +93,7 @@ public class PluginCore {
 
     @Listener
     public void setupHibernate(GamePreInitializationEvent event) {
+        logger.info("Initializing Hibernate .... ");
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
         Path p = copyDBProperties(Sponge.getGame());
 
@@ -168,8 +169,15 @@ public class PluginCore {
                         .applySettings(configuration.getProperties())
                         .build();
 
+                SessionFactory factory = null;
+                try {
+                    factory = configuration.buildSessionFactory(registry);
+                } catch (Exception e) {
+                    logger.error("Could not build session factory", e);
+                    logger.error("^ This is the relevant part of log you are looking for");
+                    factory = new DummySessionFactory();
+                }
 
-                SessionFactory factory = configuration.buildSessionFactory(registry);
 
                 IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
                 SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);

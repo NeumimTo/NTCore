@@ -3,14 +3,16 @@ deploy:
   api_key: $apikey
   skip_cleanup: true
   file_glob: true
-  file: "/home/travis/build/NeumimTo/NTCore/target/NTCore-*-shaded.jar"
+  file:
+    - "/home/travis/build/libs/NTCore-*-shaded.jar"
+    - "/home/travis/build/libs/NTCore-*-sources.jar"
   on:
-    branch: master
+    branch: release
 language: java
 jdk:
   - oraclejdk8
 after_success:
   - git config --global user.name "Travis CI"
-  - export GIT_TAG=build-$(date -u "+%Y-%m-%d-%H")-$TRAVIS_BUILD_NUMBER
-  - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
-  - git push origin $GIT_TAG
+  - export PVERSION="$(cat build.gradle | grep -E "version+ =+ '([^\s]+)'" | awk -F \' '{print $2}')"
+  - git tag $GIT_TAG -a -m "$PVERSION"
+  - git push origin $PVERSION
