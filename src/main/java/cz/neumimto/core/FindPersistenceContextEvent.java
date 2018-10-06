@@ -11,7 +11,15 @@ import java.util.Set;
  * Created by NeumimTo on 12.12.2015.
  */
 public class FindPersistenceContextEvent extends AbstractEvent {
+
     private Set<Class<?>> classes = new HashSet<>();
+
+    private String unit;
+
+    public FindPersistenceContextEvent(String unit) {
+        this.unit = unit;
+    }
+
     public Set<Class<?>> getClasses() {
         return classes;
     }
@@ -21,4 +29,11 @@ public class FindPersistenceContextEvent extends AbstractEvent {
         return Cause.of(EventContext.empty(), PluginCore.Instance);
     }
 
+    public String getUnit() {
+        return unit;
+    }
+
+    public boolean validForContext(String str) {
+        return unit.equals("*") || unit.equals(str);
+    }
 }

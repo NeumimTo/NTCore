@@ -1,12 +1,9 @@
-package cz.neumimto.core.dao.genericDao;
+package cz.neumimto.core.dao;
 
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-
-import javax.persistence.EntityManager;
-import java.util.Set;
 
 /**
  * Created by NeumimTo on 28.11.2015.
@@ -21,11 +18,10 @@ import java.util.Set;
  */
 public abstract class GenericDao<E> {
 
-    @cz.neumimto.core.ioc.Inject
-    protected SessionFactory factory;
+    public abstract SessionFactory getFactory();
 
     public void update(E e) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -33,7 +29,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();
@@ -41,7 +39,7 @@ public abstract class GenericDao<E> {
     }
 
     public void save(E e) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -49,7 +47,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();
@@ -57,7 +57,7 @@ public abstract class GenericDao<E> {
     }
 
     public void remove(E e) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -65,7 +65,9 @@ public abstract class GenericDao<E> {
             session.flush();
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();
@@ -73,7 +75,7 @@ public abstract class GenericDao<E> {
     }
 
     public void merge(E e, Long id) {
-        Session session = factory.openSession();
+        Session session = getFactory().openSession();
         Transaction tx = null;
         try {
             tx = session.beginTransaction();
@@ -81,7 +83,9 @@ public abstract class GenericDao<E> {
             session.merge(e);
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             ex.printStackTrace();
         } finally {
             session.close();

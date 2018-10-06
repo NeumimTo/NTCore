@@ -2,11 +2,12 @@ package cz.neumimto.core;
 
 import com.google.inject.Inject;
 import cz.neumimto.core.ioc.IoC;
+import cz.neumimto.core.migrations.DbMigrationService;
 import net.minecraft.launchwrapper.Launch;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
@@ -29,16 +30,23 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 //todo make possible more than one persistence context
+
 /**
  * Created by NeumimTo on 28.11.2015.
  */
-@Plugin(id = "nt-core", name = "NT-Core",version = "1.12")
+@Plugin(id = "nt-core", name = "NT-Core", version = "@VERSION@")
 public class PluginCore {
 
-    protected static PluginCore Instance;
+    public static PluginCore Instance;
 
     @Inject
     public Logger logger;
@@ -49,75 +57,7 @@ public class PluginCore {
 
     private Path path;
 
-    @Listener
-    public void setup(GameConstructionEvent event) {
-        Game game = Sponge.getGame();
-        IoC ioC = IoC.get();
-        ioC.registerInterfaceImplementation(Game.class,game);
-        ioC.registerInterfaceImplementation(Logger.class,logger);
-        PluginContainer implementation = game.getPlatform().getImplementation();
-
-        if (implementation.getName().equalsIgnoreCase("SpongeVanilla")) {
-            File folder = config.getParent().toFile();
-            for (File file : folder.listFiles()) {
-                if (file.getName().endsWith("jar")) {
-                    logger.info(file.getName()+ " will be added to the classpath.");
-                    loadJarFile(file);
-                }
-            }
-        }
-    }
-
-    @Listener
-    public void setupHibernate(GamePreInitializationEvent event) {
-        Path p = copyDBProperties(Sponge.getGame());
-        Properties properties = new Properties();
-        try (FileInputStream stream = new FileInputStream(p.toFile())) {
-            properties.load(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        properties.put("hibernate.mapping.precedence","class ,hbm");
-        properties.put("hibernate.enable_lazy_load_no_trans", true);
-        FindPersistenceContextEvent ev = new FindPersistenceContextEvent();
-        Sponge.getEventManager().post(ev);
-        Configuration configuration = new Configuration();
-        configuration.addProperties(properties);
-        ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
-        try {
-            getClass().getClassLoader().loadClass(properties.get("hibernate.hikari.dataSourceClassName").toString());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            logger.info("Loading driver class "+properties.get("hibernate.hikari.dataSourceClassName").toString());
-            Class.forName(properties.get("hibernate.hikari.dataSourceClassName").toString());
-         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        ServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
-        SessionFactory factory = configuration.buildSessionFactory(registry);
-        IoC.get().registerInterfaceImplementation(SessionFactory.class,factory);
-        SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
-        Sponge.getEventManager().post(e);
-    }
-
-    protected Path copyDBProperties(Game game) {
-        Path path = Paths.get(config.getParent().toString()+File.separator+"database.properties");
-        if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
-            InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("database.properties");
-            try {
-                Files.copy(resourceAsStream, path);
-                logger.info("File \"database.properties\" has been copied into the config/nt-core folder.");
-                logger.info("\u001b[1;32mBy default H2 databse will be used");
-                game.getServer().shutdown();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return path;
-    }
+    private static Map<String, SessionFactory> sessionFactories = new ConcurrentHashMap<>();
 
     public static void loadJarFile(File f) {
         try {
@@ -132,8 +72,157 @@ public class PluginCore {
     }
 
     @Listener
+    public void setup(GameConstructionEvent event) {
+        Instance = this;
+        Game game = Sponge.getGame();
+        IoC ioC = IoC.get();
+        ioC.registerInterfaceImplementation(Game.class, game);
+        ioC.registerInterfaceImplementation(Logger.class, logger);
+        PluginContainer implementation = game.getPlatform().getImplementation();
+
+        if (implementation.getName().equalsIgnoreCase("SpongeVanilla")) {
+            File folder = config.getParent().toFile();
+            for (File file : folder.listFiles()) {
+                if (file.getName().endsWith("jar")) {
+                    logger.info(file.getName() + " will be added to the classpath.");
+                    loadJarFile(file);
+                }
+            }
+        }
+    }
+
+    @Listener
+    public void setupHibernate(GamePreInitializationEvent event) {
+        logger.info("Initializing Hibernate .... ");
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
+        Path p = copyDBProperties(Sponge.getGame());
+
+        for (File file : p.toFile().listFiles()) {
+            String name = file.getName();
+            if (name.startsWith("database") && name.endsWith(".properties")) {
+                String[] split = name.split("\\.");
+                String unit = "*";
+                if (split.length == 3) {
+                    unit = split[2];
+                }
+                Properties properties = new Properties();
+                try (FileInputStream stream = new FileInputStream(file)) {
+                    properties.load(stream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                /*
+                I dont want these to be changeable from config file, so just set them every time
+                 */
+                properties.put(Environment.ARTIFACT_PROCESSING_ORDER, "class, hbm");
+                properties.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, true);
+
+                /*
+                Dont override if setup otherwise
+                 */
+                if (!properties.containsKey(Environment.HBM2DDL_AUTO)) {
+                    properties.put(Environment.HBM2DDL_AUTO, "validate");
+                }
+                properties.put(Environment.LOG_SESSION_METRICS, false);
+                String s = (String) properties.get("hibernate.connection.url");
+                if (s == null) {
+                    throw new RuntimeException("hibernate.connection.url is missing in database.properties file");
+                }
+
+                DbMigrationService build = IoC.get().build(DbMigrationService.class);
+                Connection connection = null;
+                try {
+                    connection = DriverManager.getConnection(s, properties.getProperty(Environment.USER), properties.getProperty(Environment.PASS));
+                    build.setConnection(connection);
+                    Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this, unit));
+                    build.startMigration();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                FindPersistenceContextEvent ev = new FindPersistenceContextEvent(unit);
+                Sponge.getEventManager().post(ev);
+                Configuration configuration = new Configuration();
+                configuration.addProperties(properties);
+                ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
+                String className = properties.get("hibernate.connection.driver_class").toString();
+                try {
+
+                    logger.info("Loading driver class " + className);
+                    getClass().getClassLoader().loadClass(className);
+                } catch (ClassNotFoundException e) {
+                    logger.error("====================================================");
+                    logger.error("Class " + className + " not found on the classpath! ");
+                    logger.error("Possible causes: ");
+                    logger.error("       - The database driver is not on the classpath");
+                    logger.error("       - The classname is miss spelled");
+                    logger.error("====================================================");
+                }
+                ServiceRegistry registry = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties())
+                        .build();
+
+                SessionFactory factory = null;
+                try {
+                    factory = configuration.buildSessionFactory(registry);
+                } catch (Exception e) {
+                    logger.error("Could not build session factory", e);
+                    logger.error("^ This is the relevant part of log you are looking for");
+                    factory = new DummySessionFactory();
+                }
+
+
+                IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
+                SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
+                Sponge.getEventManager().post(e);
+                sessionFactories.put(unit, factory);
+            }
+        }
+
+    }
+
+    protected Path copyDBProperties(Game game) {
+        Path path = Paths.get(config.getParent().toString() + File.separator + "database.properties");
+        if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+            InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("database.properties");
+            try {
+                Files.copy(resourceAsStream, path);
+                logger.info("File \"database.properties\" has been copied into the config/nt-core folder.");
+                logger.info("\u001b[1;32mBy default H2 databse will be used");
+                game.getServer().shutdown();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return path.getParent();
+    }
+
+    @Listener
     public void close(GameStoppedServerEvent event) {
 
-       // IoC.get().build(SessionFactory.class).close();
+        // IoC.get().build(SessionFactory.class).close();
+    }
+
+    public SessionFactory getSessionFactoryByName(String name) {
+        if (sessionFactories.size() == 1) {
+            return sessionFactories.values().iterator().next();
+        }
+        SessionFactory sessionFactory = sessionFactories.get(name);
+        if (sessionFactory == null) {
+            logger.error("==========================");
+            logger.error("Attempted to get a sessionfactory with id " + name);
+            logger.error("");
+            logger.error("No factory found");
+            logger.error("Configure session factory by creating a definition in config/nt-core/database."+name+".properties");
+            logger.error("==========================");
+        }
+        return sessionFactory;
     }
 }
