@@ -196,7 +196,6 @@ public class PluginCore {
                 Files.copy(resourceAsStream, path);
                 logger.info("File \"database.properties\" has been copied into the config/nt-core folder.");
                 logger.info("\u001b[1;32mBy default H2 databse will be used");
-                game.getServer().shutdown();
             } catch (IOException e) {
                 e.printStackTrace();
             }
