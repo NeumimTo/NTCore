@@ -24,9 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -38,7 +35,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -60,24 +56,6 @@ public class PluginCore {
     private Path config;
 
     private Path path;
-
-    static {
-
-        try {
-            ClassLoader classLoader = PluginCore.class.getClassLoader();
-            Field invalidClasses = classLoader.getClass().getDeclaredField("invalidClasses");
-            invalidClasses.setAccessible(true);
-            Field negativeResourceCache = classLoader.getClass().getDeclaredField("negativeResourceCache");
-            negativeResourceCache.setAccessible(true);
-            Method clear = Set.class.getDeclaredMethod("clear");
-            Object o = invalidClasses.get(classLoader);
-            clear.invoke(o);
-            Object o1 = negativeResourceCache.get(classLoader);
-            clear.invoke(o1);
-        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-    }
 
     private static Map<String, SessionFactory> sessionFactories = new ConcurrentHashMap<>();
 
