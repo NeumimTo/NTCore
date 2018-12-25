@@ -15,7 +15,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameConstructionEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -33,8 +33,10 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -58,6 +60,9 @@ public class PluginCore {
     private Path path;
 
     private static Map<String, SessionFactory> sessionFactories = new ConcurrentHashMap<>();
+
+    //yet another sponge workaround
+    public static Set<Class<?>> MANAGED_JPA_TYPES = new HashSet<>();
 
     public static void loadJarFile(File f) {
         try {
@@ -92,7 +97,7 @@ public class PluginCore {
     }
 
     @Listener
-    public void setupHibernate(GamePreInitializationEvent event) {
+    public void setupHibernate(GameInitializationEvent event) {
         logger.info("Initializing Hibernate .... ");
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
         Path p = copyDBProperties(Sponge.getGame());
@@ -147,11 +152,14 @@ public class PluginCore {
                     }
                 }
 
+                /* disabled until sponge fixes modloading
                 FindPersistenceContextEvent ev = new FindPersistenceContextEvent(unit);
                 Sponge.getEventManager().post(ev);
+                 */
                 Configuration configuration = new Configuration();
                 configuration.addProperties(properties);
-                ev.getClasses().stream().forEach(configuration::addAnnotatedClass);
+                MANAGED_JPA_TYPES.forEach(configuration::addAnnotatedClass);
+
                 String className = properties.get("hibernate.connection.driver_class").toString();
                 try {
 
