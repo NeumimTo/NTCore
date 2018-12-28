@@ -100,7 +100,11 @@ public class LocalizationService {
     }
 
     public List<Text> getTextList(String key) {
-        String[] stringArray = (String[]) bundle.get(key);
+        Object o = bundle.get(key);
+        if (o instanceof String) {
+            return TextHelper.splitStringByDelimiter((String) o);
+        }
+        String[] stringArray = (String[]) o;
         if (stringArray == null) {
             return Collections.emptyList();
         }
