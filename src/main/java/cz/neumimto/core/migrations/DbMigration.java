@@ -19,19 +19,24 @@ public class DbMigration implements Comparable<DbMigration> {
 
     public static synchronized List<DbMigration> from(String data) {
         Pattern compile = Pattern.compile("(?<=:).*");
-        DbMigration cached = new DbMigration();
+
+        DbMigration cached = null;
         List<DbMigration> list = new ArrayList<>();
+
         String[] split = data.split("\n");
         for (String s : split) {
             if (s.startsWith("--@author:")) {
+                validate(cached);
                 Matcher matcher = compile.matcher(s);
                 matcher.find();
                 cached.author = matcher.group();
             } else if (s.startsWith("--@note:")) {
+                validate(cached);
                 Matcher matcher = compile.matcher(s);
                 matcher.find();
                 cached.note = matcher.group();
             } else if (s.startsWith("--@date:")) {
+                validate(cached);
                 Matcher matcher = compile.matcher(s);
                 matcher.find();
                 DateFormat df = new SimpleDateFormat("dd.MM.YYYY HH:mm");
@@ -40,9 +45,11 @@ public class DbMigration implements Comparable<DbMigration> {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+                //always has to start with id
             } else if (s.startsWith("--@id:")) {
-                list.add(cached);
-                if (!cached.sql.isEmpty()) {
+                if (cached != null) {
+                    list.add(cached);
+                } else {
                     cached = new DbMigration();
                     list.add(cached);
                 }
@@ -54,6 +61,19 @@ public class DbMigration implements Comparable<DbMigration> {
             }
         }
         return list;
+    }
+
+    private static void validate(DbMigration cached) {
+        if (cached == null) {
+            throw new RuntimeException(
+                    "Invalid migration format" +
+                    "\nMigration has to be in the following format:" +
+                    "\n--@id: - always first - unique id" +
+                    "\n--@author: - mandatory - who is the author" +
+                    "\n--@note: - optional - some relevant notes" +
+                    "\n--@date: - mandatory - when was the migration written" +
+                    "\n...sql...");
+        }
     }
 
     public String getId() {

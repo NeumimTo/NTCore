@@ -9,7 +9,7 @@ plugins {
 apply plugin: 'java-library'
 
 group = 'cz.neumimto'
-version = '1.13-SNAPSHOT-8'
+version = '1.13-SNAPSHOT-9'
 
 sponge {
     plugin {
