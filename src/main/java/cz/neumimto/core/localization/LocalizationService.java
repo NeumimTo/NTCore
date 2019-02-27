@@ -49,10 +49,17 @@ public class LocalizationService {
     private synchronized void loadResourceBundle(ResourceBundle resourceBundle) {
         for (Class<?> localization : localizations) {
             Field[] fields = localization.getFields();
+            String prefix = localization.getAnnotation(Localization.class).value();
+            Enumeration<String> keys = resourceBundle.getKeys();
+            if (keys.hasMoreElements()) {
+                String s = keys.nextElement();
+                if (!s.startsWith(prefix)) {
+                    continue;
+                }
+            }
             for (Field field : fields) {
                 if (field.getType() == LocalizableParametrizedText.class && Modifier.isStatic(field.getModifiers())) {
-                    String value = localization.getAnnotation(Localization.class).value();
-                    value = value + "." + field.getName().toLowerCase();
+                    String value = prefix + "." + field.getName().toLowerCase();
                     try {
                         if (LocalizableParametrizedText.class.isAssignableFrom(field.getType())) {
                             try {
