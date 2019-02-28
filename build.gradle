@@ -9,7 +9,7 @@ plugins {
 apply plugin: 'java-library'
 
 group = 'cz.neumimto'
-version = '1.13-SNAPSHOT-9'
+version = '1.13-SNAPSHOT-10'
 
 sponge {
     plugin {
@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    api 'com.github.NeumimTo:IoC:55a0991e84'
+    api 'com.github.NeumimTo:IoC:b14871cd33'
     api 'com.github.NeumimTo:HoconConfigMapper:f8de21c6df'
     api 'org.hibernate:hibernate-entitymanager:5.3.6.Final'
 

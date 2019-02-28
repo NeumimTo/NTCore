@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -81,6 +82,18 @@ public class PluginCore {
         Instance = this;
         Game game = Sponge.getGame();
         IoC ioC = IoC.get();
+        ioC.registerAnnotationCallback(PersistentContext.class, injectContext -> {
+            PersistentContext annotation = injectContext.annotatedElement.getAnnotation(PersistentContext.class);
+            String value = annotation.value();
+            SessionFactory sessionFactoryByName = getSessionFactoryByName(value);
+            try {
+                Field field = (Field) injectContext.annotatedElement;
+                field.setAccessible(true);
+                field.set(injectContext.instance, sessionFactoryByName);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        });
         ioC.registerInterfaceImplementation(Game.class, game);
         ioC.registerInterfaceImplementation(Logger.class, logger);
         PluginContainer implementation = game.getPlatform().getImplementation();
@@ -223,12 +236,21 @@ public class PluginCore {
         }
         SessionFactory sessionFactory = sessionFactories.get(name);
         if (sessionFactory == null) {
-            logger.error("==========================");
-            logger.error("Attempted to get a sessionfactory with id " + name);
-            logger.error("");
-            logger.error("No factory found");
-            logger.error("Configure session factory by creating a definition in config/nt-core/database."+name+".properties");
-            logger.error("==========================");
+            logger.warn("==========================");
+            logger.warn("Attempted to get a sessionfactory with id " + name);
+            logger.warn("");
+            logger.warn("No factory found");
+            logger.warn("Configure session factory by creating a definition in config/nt-core/database."+name+".properties");
+            logger.warn("==========================");
+        }
+        sessionFactory = sessionFactories.get("*");
+        if (sessionFactory == null) {
+            logger.warn("==========================");
+            logger.warn("Attempted to get a fallback sessionfactory");
+            logger.warn("");
+            logger.warn("No factory found");
+            logger.warn("Configure session factory by creating a definition in config/nt-core/database.properties");
+            logger.warn("==========================");
         }
         return sessionFactory;
     }
