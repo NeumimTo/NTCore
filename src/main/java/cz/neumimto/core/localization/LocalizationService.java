@@ -1,10 +1,10 @@
 package cz.neumimto.core.localization;
 
-import cz.neumimto.core.ioc.Inject;
-import cz.neumimto.core.ioc.Singleton;
 import org.slf4j.Logger;
 import org.spongepowered.api.text.Text;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -23,8 +23,10 @@ import java.util.stream.Stream;
 public class LocalizationService {
 
     private final List<Class<?>> localizations = new ArrayList<>();
+
     @Inject
     private Logger logger;
+
     private Map<String, Object> bundle = new HashMap<>();
 
     public void registerClass(Class<?> clazz) {

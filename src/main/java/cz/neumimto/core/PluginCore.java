@@ -1,7 +1,7 @@
 package cz.neumimto.core;
 
 import com.google.inject.Inject;
-import cz.neumimto.core.ioc.IoC;
+import cz.neumimto.core.localization.LocalizationService;
 import cz.neumimto.core.migrations.DbMigrationService;
 import net.minecraft.launchwrapper.Launch;
 import org.hibernate.SessionFactory;
@@ -58,6 +58,15 @@ public class PluginCore {
     @DefaultConfig(sharedRoot = false)
     private Path config;
 
+    @Inject
+    Game game;
+
+    @Inject
+    DbMigrationService dbMigrationService;
+
+    @Inject
+    LocalizationService localizationService;
+
     private Path path;
 
     private static Map<String, SessionFactory> sessionFactories = new ConcurrentHashMap<>();
@@ -77,25 +86,26 @@ public class PluginCore {
         return Launch.classLoader;
     }
 
+    public void injectPersistentContext(Object object) {
+        for (Field declaredField : object.getClass().getDeclaredFields()) {
+            declaredField.setAccessible(true);
+            if (declaredField.isAnnotationPresent(PersistentContext.class)) {
+                PersistentContext annotation = declaredField.getAnnotation(PersistentContext.class);
+                String value = annotation.value();
+                SessionFactory sessionFactoryByName = getSessionFactoryByName(value);
+                try {
+                    declaredField.set(object, sessionFactoryByName);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     @Listener
     public void setup(GameConstructionEvent event) {
         Instance = this;
-        Game game = Sponge.getGame();
-        IoC ioC = IoC.get();
-        ioC.registerAnnotationCallback(PersistentContext.class, injectContext -> {
-            PersistentContext annotation = injectContext.annotatedElement.getAnnotation(PersistentContext.class);
-            String value = annotation.value();
-            SessionFactory sessionFactoryByName = getSessionFactoryByName(value);
-            try {
-                Field field = (Field) injectContext.annotatedElement;
-                field.setAccessible(true);
-                field.set(injectContext.instance, sessionFactoryByName);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        });
-        ioC.registerInterfaceImplementation(Game.class, game);
-        ioC.registerInterfaceImplementation(Logger.class, logger);
+
         PluginContainer implementation = game.getPlatform().getImplementation();
 
         if (implementation.getName().equalsIgnoreCase("SpongeVanilla")) {
@@ -148,13 +158,12 @@ public class PluginCore {
                     throw new RuntimeException("hibernate.connection.url is missing in database.properties file");
                 }
 
-                DbMigrationService build = IoC.get().build(DbMigrationService.class);
                 Connection connection = null;
                 try {
                     connection = DriverManager.getConnection(s, properties.getProperty(Environment.USER), properties.getProperty(Environment.PASS));
-                    build.setConnection(connection);
+                    dbMigrationService.setConnection(connection);
                     Sponge.getEventManager().post(new FindDbSchemaMigrationsEvent(this, unit));
-                    build.startMigration();
+                    dbMigrationService.startMigration();
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -199,8 +208,6 @@ public class PluginCore {
                     factory = new DummySessionFactory();
                 }
 
-
-                IoC.get().registerInterfaceImplementation(SessionFactory.class, factory);
                 SessionFactoryCreatedEvent e = new SessionFactoryCreatedEvent(factory);
                 Sponge.getEventManager().post(e);
                 sessionFactories.put(unit, factory);

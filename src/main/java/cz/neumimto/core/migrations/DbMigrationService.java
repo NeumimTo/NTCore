@@ -1,8 +1,8 @@
 package cz.neumimto.core.migrations;
 
 import com.google.common.io.CharStreams;
-import cz.neumimto.core.ioc.Singleton;
 
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
