@@ -14,6 +14,7 @@ version = '1.13-SNAPSHOT-10'
 sponge {
     plugin {
         meta {
+            id = 'nt-core'
             version = getVersion().toString()
         }
     }
