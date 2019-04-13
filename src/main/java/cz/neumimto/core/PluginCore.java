@@ -131,7 +131,7 @@ public class PluginCore {
                 String[] split = name.split("\\.");
                 String unit = "*";
                 if (split.length == 3) {
-                    unit = split[2];
+                    unit = split[1];
                 }
                 Properties properties = new Properties();
                 try (FileInputStream stream = new FileInputStream(file)) {
